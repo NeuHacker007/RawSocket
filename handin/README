@@ -1,0 +1,48 @@
+# Team: WhiteHat
+# Project 4: raw socket
+# Authors: Yifan Zhang (zhang.yifan2@husky.neu.edu) Xinyi Zhang (zhang.xinyi@husky.neu.edu)
+# Date: 03/30/2016
+
+0x01 High level design
+In this case, in order to implment three layer protocols: TCP, IP, HTTP. So, we set up three classes which contains different functionalities in it.
+
+Classes:
+HTTP: in this class, we defined application level implementation which is similar with project 2. We got the following funcationalities 
+    - GETRequest: which compose GET request
+    - responseSplit: which will split HTTP head and body
+    - extractStatusCode: which will get HTTP status code which is used to indicate whether HTTP request is success or not.
+    - isResponseChunked: which will analyze the HTTP header to see that whether encoding method is chunked.
+    - getContentLength: which will get length parameter in HTTP header which controls how many data we should recieve
+This funciotns help us to solve HTTP related functions and mainly used to form GET request. 
+
+TCP: in this class we mainly deal with TCP in layer 4. The class of TCP has defined each member attribute according to the RFC TCP implementation specification. The main purpose of this class is to assemble the different TCP segments into an object and we can easily compose a tcp header. Besides, we also implement the congestion Window controls. The main functionalities as follows:
+    - set each attributes methods: it is used to set diffent member values
+    - getTCPheader : it is used to compose TCP header for later use by using values of the object. 
+    - getChecksum: it is used to calculate the checksum through using psedudo IP header. 
+    - congetstionWindowAdjust: it is used to calculate the congestion window real time. it would be called when packet starting loosing. 
+    - toString: will compose every attribute of this TCP object in string format
+
+IP: this class's purpose is similar with TCP class, which will compose a IP object with all the attributes according to RFC IP specification. We use this class to generate IP header for our packets. Mainly, we defined following functionalities. 
+    - getIPheader: which compose IP header with the object's own attributes
+    - toString(): will compose every attribute of this TCP object in string format
+
+recvPacket: this class is mainly designed from recieve-packet perspective, which defines major attributes of IP and TCP like user_data, IP, seq, ack and so on. When we unpack recieved packet, we will create such a object to accept each correspond attribute. 
+
+
+baseUtility: this class is a basic tool class which provides bunch of functionalities which are categorized as below:
+    - IP obtaining functions: these functions are used to dealing with source IP, destination IP
+    - File creation functions: these would help us write data recieved in socket into OS file system. 
+    - Ack recieve functions: these functions will dealing with sending acks and recieve data which is filtered for our program. 
+    - Packet Decomposition functions: these functionalities used to decompose each attribute of a received packet from binary to human readable and meaningful data. The result will help us to filter some unwanted packets out. 
+
+
+Congestion Window Control: every acked, we increase congestion window with 1. if the global congestion window over 1000 and it will be reset to 1.
+
+Time out: if 3 min we cannot receive data, we will print timeout error.
+
+
+0x02 Challenge
+
+In this project, we faced a lot of chanllenges expecially for the way to deal with Seq and ACK numbers and how to calculate the window size. We also saw some fragmentations and duplication pieces of data. We finally found that we calculate the ACK wrong and we shouldnot add 1 instead of directly use server's sequnce plus data length. 
+
+It takes a lot of time for us to debug the program in wireshark and especially for the binary file. However, we wrote a simple tool to check it.  
